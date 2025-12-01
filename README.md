@@ -22,6 +22,10 @@ Achieved by storing 2 byte offsets instead of 8 byte addresses as well as storin
 ## Speed
 It go loco :P
 
+<img width="84" height="100" alt="image" src="https://github.com/user-attachments/assets/2f9eefd6-c3e8-484b-b768-ce3c9b1971f0" />
+
+Note: this is an ideal scenario, speed on windows is untested and likely much lower.
+
 ## Example
 ```
 # linux 
