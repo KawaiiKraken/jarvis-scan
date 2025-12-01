@@ -24,5 +24,8 @@ It go loco :P
 
 ## Example
 ```
-git clone https://github.com/KawaiiKraken/jarvis-scan/; cd jarvis scan; cargo r -r -- kvm explorer.exe
+# linux 
+git clone https://github.com/KawaiiKraken/jarvis-scan/; cd jarvis-scan; cargo r -r -- kvm explorer.exe
+# windows 
+git clone https://github.com/KawaiiKraken/jarvis-scan/; cd jarvis-scan; cargo r -r -- explorer.exe
 ```

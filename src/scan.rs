@@ -1,3 +1,6 @@
+#[cfg(target_os = "windows")]
+use crate::cache::TimedCacheValidator;
+#[cfg(target_os = "linux")]
 use memflow::prelude::v1::trait_group::c_void;
 use memflow::prelude::v1::*;
 use memflow::types::Address;
@@ -7,7 +10,21 @@ use serde::{Deserialize, Serialize};
 use std::{sync::Mutex, time::Duration};
 use strum_macros::{EnumIter, EnumMessage};
 
-pub(crate) type ProcessWrapper = IntoProcessInstance<'static, CBox<'static, c_void>, CArc<c_void>>;
+#[cfg(target_os = "linux")]
+pub type ProcessWrapper = IntoProcessInstance<'static, CBox<'static, c_void>, CArc<c_void>>;
+#[cfg(target_os = "windows")]
+pub type ProcessWrapper = memflow_win32::prelude::Win32Process<
+    CachedPhysicalMemory<
+        'static,
+        MappedPhysicalMemory<
+            &'static mut [u8],
+            memflow_vdm::VdmContext<'static, memflow_winio::WinIoDriver>,
+        >,
+        TimedCacheValidator,
+    >,
+    CachedVirtualTranslate<DirectTranslate, TimedCacheValidator>,
+    memflow_win32::prelude::Win32VirtualTranslate,
+>;
 
 use crate::{
     FastScan,

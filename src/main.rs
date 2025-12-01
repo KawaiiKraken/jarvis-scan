@@ -1,11 +1,10 @@
 // TODO: better f32 handling and rounding
 // TODO: sigs, pointermaps, codecaves
-//
 
-extern crate jemallocator;
+use mimalloc::MiMalloc;
 
 #[global_allocator]
-static GLOBAL: jemallocator::Jemalloc = jemallocator::Jemalloc;
+static GLOBAL: MiMalloc = MiMalloc;
 
 mod data_type;
 use data_type::DataType;
@@ -25,6 +24,7 @@ use crate::scan::ScanType;
 #[derive(FromArgs)]
 /// memory view
 struct Args {
+    #[cfg(target_os = "linux")]
     /// memflow connector
     #[argh(positional)]
     connector: String,
@@ -32,13 +32,14 @@ struct Args {
     #[argh(positional)]
     exe: String,
     /// default win32
+    #[cfg(target_os = "linux")]
     #[argh(option, default = "String::from(\"win32\")")]
     os_chain: String,
 }
 
 fn main() {
     let args: Args = argh::from_env();
-    // TODO: native windows support
+    #[cfg(target_os = "linux")]
     let os = {
         let inventory = memflow::plugins::Inventory::scan();
         let connector = args.connector.as_str();
@@ -51,6 +52,26 @@ fn main() {
 
         let os = inventory.builder().os_chain(chain).build().unwrap();
         os
+    };
+
+    #[cfg(target_os = "windows")]
+    let os = {
+        let path = r"C:\winio64.sys";
+        if !std::path::Path::new(path).exists() {
+            use std::io::Write;
+
+            std::fs::File::create(path)
+                .unwrap()
+                .write_all(include_bytes!("../bin/winio64.sys"))
+                .unwrap();
+        }
+
+        let connector = memflow_winio::create_connector(&ConnectorArgs::default()).unwrap();
+
+        memflow_win32::prelude::Win32Kernel::builder(connector)
+            .build_default_caches()
+            .build()
+            .unwrap()
     };
 
     let mut process = os
